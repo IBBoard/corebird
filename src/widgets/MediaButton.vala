@@ -185,11 +185,26 @@ private class MediaButton : Gtk.Widget {
       ct.save ();
       ct.rectangle (0, 0, widget_width, widget_height);
       ct.scale (scale, scale);
-      double draw_y = -(((media.height * scale) - draw_height) / 2);
+      double draw_y = -Math.floor(((media.height * scale) - draw_height) / 2);
       ct.set_source_surface (media.surface, draw_x / scale, draw_y / scale);
       ct.paint_with_alpha (this.media_alpha);
       ct.restore ();
       ct.new_path ();
+
+      /*
+       * If image got moved off the top, we cropped it. Indicate that.
+       * Currently trying a gradient overlay top and bottom
+       */
+      if (draw_y < 0) {
+        Cairo.Pattern pattern = new Cairo.Pattern.linear (0.0, 0.0, 0, widget_height);
+        pattern.add_color_stop_rgba (0.01, 0.3, 0.3, 0.3, 1);
+        pattern.add_color_stop_rgba (0.1, 0.7, 0.7, 0.7, 0);
+        pattern.add_color_stop_rgba (0.9, 0.7, 0.7, 0.7, 0);
+        pattern.add_color_stop_rgba (0.99, 0.3, 0.3, 0.3, 1);
+        ct.rectangle (0, 0, widget_width, widget_height);
+        ct.set_source (pattern);
+        ct.fill ();
+      }
 
       /* Draw play indicator */
       if (_media.is_video ()) {
