@@ -197,10 +197,10 @@ private class MediaButton : Gtk.Widget {
        */
       if (draw_y < 0) {
         Cairo.Pattern pattern = new Cairo.Pattern.linear (0.0, 0.0, 0, widget_height);
-        pattern.add_color_stop_rgba (0.01, 0.3, 0.3, 0.3, 1);
+        pattern.add_color_stop_rgba (0.01, 0.4, 0.4, 0.4, 1);
         pattern.add_color_stop_rgba (0.1, 0.7, 0.7, 0.7, 0);
         pattern.add_color_stop_rgba (0.9, 0.7, 0.7, 0.7, 0);
-        pattern.add_color_stop_rgba (0.99, 0.3, 0.3, 0.3, 1);
+        pattern.add_color_stop_rgba (0.99, 0.4, 0.4, 0.4, 1);
         ct.rectangle (0, 0, widget_width, widget_height);
         ct.set_source (pattern);
         ct.fill ();
