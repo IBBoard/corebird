@@ -138,7 +138,7 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
       rt_label.label = buff.str;
     }
 
-    if (tweet.reply_id != 0) {
+    if (tweet.reply_id != 0 && (tweet.quoted_tweet == null || tweet.reply_id != tweet.quoted_tweet.id)) {
       var buff = new StringBuilder ();
       /* Use the user we directly reply to in any case */
       /* TRANSLATORS: This is the start of a "Replying to" line in a tweet */
