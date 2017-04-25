@@ -139,35 +139,48 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
     }
 
     if (tweet.reply_id != 0) {
-      var buff = new StringBuilder ();
-      /* Use the user we directly reply to in any case */
-      /* TRANSLATORS: This is the start of a "Replying to" line in a tweet */
-      buff.append (_("Replying to"));
-      buff.append_c (' ');
-      buff.append ("<span underline='none'><a href=\"@")
-          .append (tweet.reply_user_id.to_string ())
-          .append ("/@")
-          .append (tweet.reply_screen_name)
-          .append ("\">@")
-          .append (tweet.reply_screen_name)
-          .append ("</a></span>");
-
-      /* And just a number for the rest */
+      Cb.TextEntity? first_mention = null;
       int n_mentions = 0;
+
+      if (tweet.reply_user_id != tweet.get_user_id ()) {
+        n_mentions ++;
+        var reply_name = new Cb.TextEntity();
+        reply_name.display_text = "@" + tweet.reply_screen_name;
+        reply_name.tooltip_text = reply_name.display_text;
+        reply_name.target = "@" + tweet.reply_user_id.to_string ()
+          + "/@" + tweet.reply_screen_name;
+        first_mention = reply_name;
+      }
+
       Cb.TextEntity? second_mention = null;
       foreach (var e in tweet.source_tweet.entities) {
         if (e.to < tweet.source_tweet.display_range_start &&
             e.display_text != "@" + tweet.reply_screen_name) {
           n_mentions ++;
 
-          if (second_mention == null) {
+          if (first_mention == null) {
+            first_mention = e;
+          } else if (second_mention == null) {
             second_mention = e;
           }
         }
       }
       // TODO: Remove the 2 .replace() calls here, since they are slow
       if (n_mentions > 0) {
-        if (n_mentions == 1 && second_mention != null) {
+        var buff = new StringBuilder ();
+        /* Use the user we directly reply to in any case */
+        /* TRANSLATORS: This is the start of a "Replying to" line in a tweet */
+        buff.append (_("Replying to"));
+        buff.append_c (' ');
+        buff.append (" <span underline='none'><a href=\"")
+            .append (first_mention.target)
+            .append ("\" title=\"")
+            .append (first_mention.tooltip_text.replace ("&", "&amp;").replace ("\"", "&quot;"))
+            .append ("\">")
+            .append (first_mention.display_text)
+            .append ("</a></span>");
+
+        if (n_mentions == 2 && second_mention != null) {
           /* From display_text, includes '@' */
           buff.append_c (' ');
           /* TRANSLATORS: This gets appended to the "replying to" line
@@ -181,16 +194,19 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
               .append ("\">")
               .append (second_mention.display_text)
               .append ("</a></span>");
-        } else {
-          /* 2 or more */
+        } else if (n_mentions > 2) {
+          /* more than 2 */
           buff.append_c (' ');
           /* TRANSLATORS: This gets appended to the "replying to" line
              in a tweet */
           buff.append (_("and %d others").printf (n_mentions));
         }
+        reply_label.label = buff.str;
+        reply_label.show ();
       }
-      reply_label.label = buff.str;
-      reply_label.show ();
+      else {
+        reply_label.hide ();
+      }
     }
 
     if (tweet.quoted_tweet != null) {

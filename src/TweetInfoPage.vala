@@ -465,45 +465,71 @@ class TweetInfoPage : IPage, ScrollWidget, IMessageReceiver {
 
     // TODO: Refactor link creation (here and in TweetListEntry)
     if (tweet.reply_id != 0) {
-      reply_box.show ();
       var buff = new StringBuilder ();
       buff.append (_("Replying to"));
       var screen_names = tweet.get_reply_screen_names ();
+      Cb.TextEntity[] names = new Cb.TextEntity[0];
 
-      buff.append (" <span underline='none'><a href=\"@")
-          .append (tweet.reply_user_id.to_string ())
-          .append ("/@")
-          .append (tweet.reply_screen_name)
-          .append ("\">@")
-          .append (tweet.reply_screen_name)
-          .append ("</a></span>");
-
-      if (screen_names.length > 0) {
-        for (int i = 0; i < screen_names.length - 1; i ++) {
-          if (screen_names[i]->display_text !=
-              "@" + tweet.reply_screen_name) {
-            buff.append (", <span underline='none'><a href=\"")
-                .append (screen_names[i]->target)
-                .append ("\" title=\"")
-                .append (screen_names[i]->tooltip_text)
-                .append ("\">")
-                .append (screen_names[i]->display_text)
-                .append ("</a></span>");
-          }
-        }
-
-        buff.append_c (' ')
-            .append (_("and"))
-            .append (" <span underline='none'><a href=\"")
-            .append (screen_names[screen_names.length - 1]->target)
-            .append ("\" title=\"")
-            .append (screen_names[screen_names.length - 1]->tooltip_text)
-            .append ("\">")
-            .append (screen_names[screen_names.length - 1]->display_text)
-            .append ("</a></span>");
+      if (tweet.reply_user_id != tweet.get_user_id ()) {
+        var reply_name = new Cb.TextEntity();
+        reply_name.display_text = "@" + tweet.reply_screen_name;
+        reply_name.tooltip_text = reply_name.display_text;
+        reply_name.target = "@" + tweet.reply_user_id.to_string ()
+          + "/@" + tweet.reply_screen_name;
+        names += reply_name;
       }
 
-      reply_label.label = buff.str;
+      for (int i = 0; i < screen_names.length; i ++) {
+        if (screen_names[i]->display_text !=
+              "@" + tweet.reply_screen_name) {
+          names += *screen_names[i];
+        }
+      }
+
+
+      if (names.length > 0) {
+        var first = true;
+
+        debug("Found %d names\n", names.length);
+        if (names.length > 1) {
+          for (int i = 0; i < names.length - 1; i ++) {
+            var name = names[i];
+            debug("Adding %d = %s\n",i,name.display_text);
+            if (name.display_text != "@" + tweet.reply_screen_name) {
+              if (!first)
+                buff.append (", ");
+              else
+                first = false;
+
+              buff.append ("<span underline='none'><a href=\"")
+                  .append (name.target)
+                  .append ("\" title=\"")
+                  .append (name.tooltip_text)
+                  .append ("\">")
+                  .append (name.display_text)
+                  .append ("</a></span> ");
+
+            }
+          }
+          buff.append_c (' ').append (_("and"));
+        }
+        debug("Adding final…");
+        var name = names[names.length - 1];
+        debug(name.display_text);
+        buff.append_c (' ')
+            .append ("<span underline='none'><a href=\"")
+            .append (name.target)
+            .append ("\" title=\"")
+            .append (name.tooltip_text)
+            .append ("\">")
+            .append (name.display_text)
+            .append ("</a></span>");
+
+        reply_box.show ();
+        reply_label.label = buff.str;
+      } else {
+        reply_box.hide ();
+      }
     } else {
       reply_box.hide ();
     }
