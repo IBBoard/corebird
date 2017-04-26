@@ -173,7 +173,6 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
         /* Use the user we directly reply to in any case */
         /* TRANSLATORS: This is the start of a "Replying to" line in a tweet */
         buff.append (_("Replying to"));
-        buff.append_c (' ');
         buff.append (" <span underline='none'><a href=\"")
             .append (first_mention.target)
             .append ("\" title=\"")
