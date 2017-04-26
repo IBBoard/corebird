@@ -488,34 +488,30 @@ class TweetInfoPage : IPage, ScrollWidget, IMessageReceiver {
 
 
       if (names.length > 0) {
-        var first = true;
-
-        debug("Found %d names\n", names.length);
         if (names.length > 1) {
+          var first = true;
+
           for (int i = 0; i < names.length - 1; i ++) {
             var name = names[i];
-            debug("Adding %d = %s\n",i,name.display_text);
-            if (name.display_text != "@" + tweet.reply_screen_name) {
-              if (!first)
-                buff.append (", ");
-              else
-                first = false;
 
-              buff.append ("<span underline='none'><a href=\"")
-                  .append (name.target)
-                  .append ("\" title=\"")
-                  .append (name.tooltip_text)
-                  .append ("\">")
-                  .append (name.display_text)
-                  .append ("</a></span> ");
+            if (!first)
+              buff.append (", ");
+            else
+              first = false;
 
-            }
+            buff.append (" <span underline='none'><a href=\"")
+                .append (name.target)
+                .append ("\" title=\"")
+                .append (name.tooltip_text)
+                .append ("\">")
+                .append (name.display_text)
+                .append ("</a></span>");
           }
           buff.append_c (' ').append (_("and"));
         }
-        debug("Adding final…");
+
         var name = names[names.length - 1];
-        debug(name.display_text);
+
         buff.append_c (' ')
             .append ("<span underline='none'><a href=\"")
             .append (name.target)
