@@ -105,8 +105,6 @@ class ComposeTweetWindow : Gtk.ApplicationWindow {
     if (mode == Mode.QUOTE) {
       assert (reply_to != null);
       this.title_label.label = _("Quote tweet");
-      add_image_button.sensitive = false;
-      fav_image_button.sensitive = false;
     }
 
     /* Let the text view immediately grab the keyboard focus */
@@ -127,6 +125,8 @@ class ComposeTweetWindow : Gtk.ApplicationWindow {
         this.compose_image_manager.hide ();
         this.enable_fav_gifs ();
       }
+
+      this.recalc_tweet_length();
     });
 
     this.add_accel_group (ag);
@@ -157,10 +157,16 @@ class ComposeTweetWindow : Gtk.ApplicationWindow {
     tweet_text.buffer.get_bounds (out start, out end);
     string text = tweet_text.buffer.get_text (start, end, true);
 
-    int length = TweetUtils.calc_tweet_length (text);
+    bool add_url = false;
+    //We can only add an image or a quoted URL as an attachment, so if we
+    //have both then the quoted tweet must become an inline URL
+    if (compose_image_manager.n_images > 0 && mode == Mode.QUOTE)
+      add_url = true;
+
+    int length = TweetUtils.calc_tweet_length (text, add_url);
 
     length_label.label = (Cb.Tweet.MAX_LENGTH - length).to_string ();
-    if (length > 0 && length <= Cb.Tweet.MAX_LENGTH) {
+    if ((length > 0 && length <= Cb.Tweet.MAX_LENGTH) || (compose_image_manager.n_images > 0 && length == 0)) {
       bool network_reachable = GLib.NetworkMonitor.get_default ().network_available;
       send_button.sensitive = network_reachable;
     } else {
@@ -320,6 +326,7 @@ class ComposeTweetWindow : Gtk.ApplicationWindow {
         }
       }
       filechooser.destroy ();
+      this.recalc_tweet_length();
     });
 
     var filter = new Gtk.FileFilter ();
@@ -444,6 +451,7 @@ class ComposeTweetWindow : Gtk.ApplicationWindow {
 
     if (this.compose_image_manager.n_images > 0)
       this.disable_fav_gifs ();
+    this.recalc_tweet_length ();
   }
 
   [GtkCallback]
