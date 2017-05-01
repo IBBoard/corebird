@@ -141,7 +141,7 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
 
     if ((tweet.retweeted_tweet != null &&
          tweet.retweeted_tweet.reply_id != 0) ||
-        tweet.source_tweet.reply_id != 0) {
+        (tweet.source_tweet.reply_id != 0 && (tweet.quoted_tweet == null || tweet.source_tweet.reply_id != tweet.quoted_tweet.id))) {
       var buff = new StringBuilder ();
 
       if (tweet.retweeted_tweet != null)
@@ -149,8 +149,12 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
       else
         Cb.Utils.write_reply_text (ref tweet.source_tweet, buff);
 
-      reply_label.label = buff.str;
-      reply_label.show ();
+      if (buff.str != "") {
+        reply_label.label = buff.str;
+        reply_label.show ();
+      } else {
+        reply_label.hide ();
+      }
     }
 
     if (tweet.quoted_tweet != null) {
@@ -167,6 +171,7 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
         var buff = new GLib.StringBuilder ();
         Cb.Utils.write_reply_text (ref tweet.quoted_tweet, buff);
         quote_reply_label.label = buff.str;
+        quote_reply_label.show ();
       }
     }
 
