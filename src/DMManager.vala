@@ -154,9 +154,11 @@ class DMManager : GLib.Object {
 
   public void insert_message (Json.Object dm_obj) {
     if (dm_obj.get_int_member ("sender_id") == account.id) {
+      debug("Inserting message - sender == account");
       //save_message (dm_obj, false);
       update_thread (dm_obj, false);
     } else {
+      debug("Inserting message - sender != account");
       update_thread (dm_obj, false);
     }
   }
@@ -200,7 +202,7 @@ class DMManager : GLib.Object {
       thread.last_message = text;
       thread.last_message_id = message_id;
       this.threads_model.add (thread);
-
+      debug("Adding dm_thread for %s", sender_screen_name);
       account.db.insert ("dm_threads")
              .vali64 ("user_id", sender_id)
              .val ("screen_name", sender_screen_name)
@@ -210,6 +212,7 @@ class DMManager : GLib.Object {
              .run ();
     } else {
       DMThread thread = threads_model.get_thread (sender_id);
+      debug("Updating dm_thread for %s", sender_screen_name);
       if (message_id > thread.last_message_id) {
         this.threads_model.update_last_message (sender_id, message_id, text);
         account.db.update ("dm_threads").val ("last_message", text)
@@ -258,6 +261,8 @@ class DMManager : GLib.Object {
                                     0,
                                     0);
     }
+
+    debug("Inserting DM from %s to %s", dm_obj.get_string_member ("sender_screen_name"), dm_obj.get_string_member ("recipient_screen_name"));
 
     account.db.insert ("dms").vali64 ("id", dm_id)
               .vali64 ("from_id", sender_id)
