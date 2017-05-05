@@ -87,6 +87,7 @@ namespace Sql {
         critical (query_builder.str);
         return 0;
       }
+      debug("SQL: %s", stmt.sql());
       bool next = true;
       int n_cols = stmt.column_count ();
       int n_rows = 0;

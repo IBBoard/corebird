@@ -145,6 +145,7 @@ class DMThreadsPage : IPage, IMessageReceiver, ScrollWidget {
   }
   public void stream_message_received (StreamMessageType type, Json.Node root) {
     if (type == StreamMessageType.DIRECT_MESSAGE) {
+      debug("DMThreadsPage received a DM - inserting");
       var obj = root.get_object ().get_object_member ("direct_message");
       this.manager.insert_message (obj);
     }

@@ -38,6 +38,7 @@ class DMManager : GLib.Object {
                      "last_message_id")
               .order ("last_message_id")
               .run ((vals) => {
+      debug("Loading cached thread for %s", vals[2]);
       DMThread thread = new DMThread ();
       thread.user.id = int64.parse (vals[0]);
       thread.user.screen_name = vals[1];
@@ -101,6 +102,7 @@ class DMManager : GLib.Object {
     call.add_param ("since_id", max_received_id.to_string ());
     call.add_param ("count", "200");
     call.add_param ("full_text", "true");
+    debug("Loading received DMs since %ll", max_received_id);
     TweetUtils.load_threaded.begin (call, null, (obj, res) => {
       try {
         Json.Node? root = TweetUtils.load_threaded.end (res);
@@ -118,6 +120,7 @@ class DMManager : GLib.Object {
     sent_call.add_param ("count", "200");
     sent_call.add_param ("full_text", "true");
     sent_call.set_method ("GET");
+    debug("Loading sent DMs since %ll", max_sent_id);
     TweetUtils.load_threaded.begin (sent_call, null, (obj, res) => {
       try {
         Json.Node? root = TweetUtils.load_threaded.end (res);
@@ -133,18 +136,21 @@ class DMManager : GLib.Object {
 
   private void on_dm_result (Json.Node? root, bool received) {
     var root_arr = root.get_array ();
-    debug ("sent: %u", root_arr.get_length ());
+    debug ("Received %u DMs", root_arr.get_length ());
     if (root_arr.get_length () > 0) {
       account.db.begin_transaction ();
       root_arr.foreach_element ((arr, pos, node) => {
         var dm_obj = node.get_object ();
         if (dm_obj.get_int_member ("sender_id") == account.id) {
           if (received) {
+            debug("Updating thread for self-sent message");
             update_thread (dm_obj, true);
           } else {
+            debug("Saving message for sent message");
             save_message (dm_obj, true);
           }
         } else {
+          debug("Updating thread for received message");
           update_thread (dm_obj, true);
         }
       });
@@ -169,6 +175,7 @@ class DMManager : GLib.Object {
     int64 message_id = dm_obj.get_int_member ("id");
 
     string source_text = dm_obj.get_string_member ("text");
+    debug("Updating thread for %ll with message %ll: %s", sender_id, message_id, source_text);
 
     var urls = dm_obj.get_object_member ("entities").get_array_member ("urls");
     var url_list = new Cb.TextEntity[urls.get_length ()];

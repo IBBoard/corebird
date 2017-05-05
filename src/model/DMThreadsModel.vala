@@ -81,11 +81,12 @@ class DMThreadsModel : GLib.ListModel, GLib.Object {
 #if DEBUG
     assert (this.has_thread (sender_id));
 #endif
-
+    debug("Updating last message for %ll with message %s", sender_id, message_text);
     int index = 0;
     for (int i = 0; i < threads.length; i ++) {
       var thread = threads.get (i);
       if (thread.user.id == sender_id) {
+        debug("Found thread - updating…");
         if (message_id > thread.last_message_id) {
           thread.last_message_id = message_id;
           thread.last_message = message_text;
@@ -150,6 +151,7 @@ class DMThreadsModel : GLib.ListModel, GLib.Object {
   }
 
   public DMThread? get_thread (int64 user_id) {
+    debug ("Getting thread %ll", user_id);
     for (int i = 0; i < threads.length; i ++) {
       var thread = threads.get (i);
       if (thread.user.id == user_id) {
