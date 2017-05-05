@@ -172,8 +172,13 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
       if (tweet.quoted_tweet.reply_id != 0) {
         var buff = new GLib.StringBuilder ();
         Cb.Utils.write_reply_text (ref tweet.quoted_tweet, buff);
-        quote_reply_label.label = buff.str;
-        quote_reply_label.show ();
+
+        if (buff.str != "") {
+          quote_reply_label.label = buff.str;
+          quote_reply_label.show ();
+        } else {
+          quote_reply_label.hide ();
+        }
       }
     }
 
