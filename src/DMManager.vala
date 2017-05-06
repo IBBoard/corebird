@@ -38,7 +38,7 @@ class DMManager : GLib.Object {
                      "last_message_id")
               .order ("last_message_id")
               .run ((vals) => {
-      debug("Loading cached thread for %s", vals[2]);
+      debug("DM: Loading cached thread for %s", vals[2]);
       DMThread thread = new DMThread ();
       thread.user.id = int64.parse (vals[0]);
       thread.user.screen_name = vals[1];
@@ -102,7 +102,7 @@ class DMManager : GLib.Object {
     call.add_param ("since_id", max_received_id.to_string ());
     call.add_param ("count", "200");
     call.add_param ("full_text", "true");
-    debug("Loading received DMs since %ll", max_received_id);
+    debug("DM: Loading received DMs since %ll", max_received_id);
     TweetUtils.load_threaded.begin (call, null, (obj, res) => {
       try {
         Json.Node? root = TweetUtils.load_threaded.end (res);
@@ -120,7 +120,7 @@ class DMManager : GLib.Object {
     sent_call.add_param ("count", "200");
     sent_call.add_param ("full_text", "true");
     sent_call.set_method ("GET");
-    debug("Loading sent DMs since %ll", max_sent_id);
+    debug("DM: Loading sent DMs since %ll", max_sent_id);
     TweetUtils.load_threaded.begin (sent_call, null, (obj, res) => {
       try {
         Json.Node? root = TweetUtils.load_threaded.end (res);
@@ -143,14 +143,14 @@ class DMManager : GLib.Object {
         var dm_obj = node.get_object ();
         if (dm_obj.get_int_member ("sender_id") == account.id) {
           if (received) {
-            debug("Updating thread for self-sent message");
+            debug("DM: Updating thread for self-sent message");
             update_thread (dm_obj, true);
           } else {
-            debug("Saving message for sent message");
+            debug("DM: Saving message for sent message");
             save_message (dm_obj, true);
           }
         } else {
-          debug("Updating thread for received message");
+          debug("DM: Updating thread for received message");
           update_thread (dm_obj, true);
         }
       });
@@ -160,11 +160,11 @@ class DMManager : GLib.Object {
 
   public void insert_message (Json.Object dm_obj) {
     if (dm_obj.get_int_member ("sender_id") == account.id) {
-      debug("Inserting message - sender == account");
+      debug("DM: Inserting message - sender == account");
       //save_message (dm_obj, false);
       update_thread (dm_obj, false);
     } else {
-      debug("Inserting message - sender != account");
+      debug("DM: Inserting message - sender != account");
       update_thread (dm_obj, false);
     }
   }
@@ -175,7 +175,7 @@ class DMManager : GLib.Object {
     int64 message_id = dm_obj.get_int_member ("id");
 
     string source_text = dm_obj.get_string_member ("text");
-    debug("Updating thread for %ll with message %ll: %s", sender_id, message_id, source_text);
+    debug("DM: Updating thread for %s with message %s: %s", sender_id.to_string(), message_id.to_string(), source_text);
 
     var urls = dm_obj.get_object_member ("entities").get_array_member ("urls");
     var url_list = new Cb.TextEntity[urls.get_length ()];
@@ -209,7 +209,7 @@ class DMManager : GLib.Object {
       thread.last_message = text;
       thread.last_message_id = message_id;
       this.threads_model.add (thread);
-      debug("Adding dm_thread for %s", sender_screen_name);
+      debug("DM: Adding dm_thread for %s", sender_screen_name);
       account.db.insert ("dm_threads")
              .vali64 ("user_id", sender_id)
              .val ("screen_name", sender_screen_name)
@@ -219,7 +219,7 @@ class DMManager : GLib.Object {
              .run ();
     } else {
       DMThread thread = threads_model.get_thread (sender_id);
-      debug("Updating dm_thread for %s", sender_screen_name);
+      debug("DM: Updating dm_thread for %s", sender_screen_name);
       if (message_id > thread.last_message_id) {
         this.threads_model.update_last_message (sender_id, message_id, text);
         account.db.update ("dm_threads").val ("last_message", text)
@@ -269,7 +269,7 @@ class DMManager : GLib.Object {
                                     0);
     }
 
-    debug("Inserting DM from %s to %s", dm_obj.get_string_member ("sender_screen_name"), dm_obj.get_string_member ("recipient_screen_name"));
+    debug("DM: Inserting DM from %s to %s", dm_obj.get_string_member ("sender_screen_name"), dm_obj.get_string_member ("recipient_screen_name"));
 
     account.db.insert ("dms").vali64 ("id", dm_id)
               .vali64 ("from_id", sender_id)

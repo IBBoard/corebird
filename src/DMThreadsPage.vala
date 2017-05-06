@@ -118,9 +118,11 @@ class DMThreadsPage : IPage, IMessageReceiver, ScrollWidget {
 
   void dm_received_cb (DMThread thread, string text, bool initial) {
     assert (thread.user.id != account.id);
-
+    debug("DM: DMThreadsPage received a DM via DMManager's message_received signal");
     if (thread.user.id != account.id) {
+      debug("DM: Message is not for current account");
       if (!user_id_visible (thread.user.id)) {
+        debug("DM: Thread not visible - incrementing unread count");
         this.unread_count ++;
         debug ("Increasing global unread count by 1");
       }
@@ -145,7 +147,7 @@ class DMThreadsPage : IPage, IMessageReceiver, ScrollWidget {
   }
   public void stream_message_received (StreamMessageType type, Json.Node root) {
     if (type == StreamMessageType.DIRECT_MESSAGE) {
-      debug("DMThreadsPage received a DM - inserting");
+      debug("DM: DMThreadsPage received a DM - inserting");
       var obj = root.get_object ().get_object_member ("direct_message");
       this.manager.insert_message (obj);
     }

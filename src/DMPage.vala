@@ -47,7 +47,7 @@ class DMPage : IPage, IMessageReceiver, Gtk.Box {
   private bool was_scrolled_down = false;
 
   public DMPage (int id, Account account) {
-    debug("Creating DMPage for tweets to %ll", id);
+    debug("DM: Creating DMPage for tweets to %ll", id);
     this.id = id;
     this.account = account;
     this.delta_updater = new Cb.DeltaUpdater (messages_list);
@@ -71,7 +71,7 @@ class DMPage : IPage, IMessageReceiver, Gtk.Box {
 
   public void stream_message_received (StreamMessageType type, Json.Node root) {
     if (type == StreamMessageType.DIRECT_MESSAGE) {
-      debug("Received streamed DM to account %ll", account.id);
+      debug("DM: Received streamed DM to account %s", account.id.to_string());
       // Arriving new dms get already cached in the DMThreadsPage
       var obj = root.get_object ().get_object_member ("direct_message");
 
@@ -162,7 +162,7 @@ class DMPage : IPage, IMessageReceiver, Gtk.Box {
   }
 
   private void load_older () {
-    debug("Loading older DMs");
+    debug("DM: Loading older DMs");
     var now = new GLib.DateTime.now_local ();
     scroll_widget.balance_next_upper_change (TOP);
     // Load messages
