@@ -160,9 +160,13 @@ class DMManager : GLib.Object {
 
   public void insert_message (Json.Object dm_obj) {
     if (dm_obj.get_int_member ("sender_id") == account.id) {
-      debug("DM: Inserting message - sender == account");
-      //save_message (dm_obj, false);
-      update_thread (dm_obj, false);
+      if (dm_obj.get_int_member ("recipient_id") != account.id) {
+        debug("DM: Inserting message - sender == account (sent to other)");
+        save_message (dm_obj, false);
+      } else {
+        debug("DM: Inserting message - sender == account (sent to self)");
+        update_thread (dm_obj, false);
+      }
     } else {
       debug("DM: Inserting message - sender != account");
       update_thread (dm_obj, false);
