@@ -37,8 +37,10 @@ namespace Sql {
         critical (db.errmsg ());
         return -1;
       }
+      debug("SQL: %s", stmt.sql());
       for (int i = 0; i < bindings.length; i++) {
         stmt.bind_text (i + 1, bindings.get (i));
+        debug("SQL:     %u = %s", i, bindings.get (i));
       }
       ok = stmt.step ();
       if (ok == Sqlite.ERROR) {

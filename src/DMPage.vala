@@ -207,6 +207,7 @@ class DMPage : IPage, IMessageReceiver, Gtk.Box {
 
   public void on_join (int page_id, Cb.Bundle? args) {
     int64 user_id = args.get_int64 (KEY_SENDER_ID);
+    debug("DM: Joined for %s", user_id.to_string());
     if (user_id == 0)
       return;
 
@@ -216,6 +217,7 @@ class DMPage : IPage, IMessageReceiver, Gtk.Box {
     string name = null;
     if ((screen_name = args.get_string (KEY_SCREEN_NAME)) != null) {
       name = args.get_string (KEY_USER_NAME);
+      debug("DM: Joined for %s", name);
       placeholder_box.user_id = user_id;
       placeholder_box.screen_name = screen_name;
       placeholder_box.name = name;
@@ -292,6 +294,7 @@ class DMPage : IPage, IMessageReceiver, Gtk.Box {
     if (notification_id != null)
       GLib.Application.get_default ().withdraw_notification (notification_id);
 
+    debug("DM: Sending DM to %s: %s", user_id.to_string (), text_view.buffer.text);
 
     // Just add the entry now
     DMListEntry entry = new DMListEntry ();
