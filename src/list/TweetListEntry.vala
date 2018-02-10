@@ -137,7 +137,9 @@ public class TweetListEntry : Cb.TwitterItem, Gtk.ListBoxRow {
           .append (tweet.source_tweet.author.screen_name)
           .append ("\">")
           .append (tweet.source_tweet.author.user_name)
-          .append ("</a></span>");
+          .append ("</a> @")
+          .append (tweet.source_tweet.author.screen_name)
+          .append ("</span>");
       rt_label.label = buff.str;
     }
 
